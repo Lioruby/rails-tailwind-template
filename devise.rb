@@ -198,7 +198,7 @@ after_bundle do
         },
         plugins: [],
       };
-  JS
+    JS
 
   end
 
