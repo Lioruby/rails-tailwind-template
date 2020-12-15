@@ -16,7 +16,7 @@ $ rails new \
   CHANGE_THIS_TO_YOUR_RAILS_APP_NAME
 ```
 
-## Devise
+### Devise
 Same as minimal plus a Devise install with a generated User model.
 
 ```sh
