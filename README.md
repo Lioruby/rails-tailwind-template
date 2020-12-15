@@ -1,6 +1,7 @@
 # Rails Tailwind template
 
 Quickly generate a rails app with Tailwind css library and the gem devise.
+Thanks to Le wagon : https://github.com/lewagon/rails-templates (same template with bootstrap )
 
 # Get started
 
