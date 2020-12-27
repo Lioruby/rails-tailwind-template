@@ -12,9 +12,12 @@ end
 
 inject_into_file 'Gemfile', after: 'group :development, :test do' do
   <<-RUBY
-  gem 'pry-byebug'
-  gem 'pry-rails'
-  gem 'dotenv-rails'
+    gem 'pry-byebug'
+    gem 'pry-rails'
+    gem 'dotenv-rails'
+    gem 'rspec-rails', '~> 4.0.1'
+    gem 'factory_bot_rails', '~> 6.1'
+    gem 'shoulda-matchers', '~> 4.0'
   RUBY
 end
 
@@ -80,6 +83,76 @@ after_bundle do
   rails_command 'db:drop db:create db:migrate'
   generate('simple_form:install')
   generate(:controller, 'pages', 'home', '--skip-routes', '--no-test-framework')
+
+
+  # Generators: rspec
+  ######################################
+  generate('rspec:install')
+
+  # FACTORY BOT GEM
+  # factory_bot.rb
+  #####################################
+  run 'mkdir ./spec/support'
+  run 'touch ./spec/support/factory_bot.rb'
+  insert_into_file './spec/support/factory_bot.rb' do
+    <<~RUBY
+      require 'factory_bot'
+
+      RSpec.configure do |config|
+        config.include FactoryBot::Syntax::Methods
+      end
+    RUBY
+  end
+
+  # rails_helper.rb
+  gsub_file('./spec/rails_helper.rb', /.+/, '')
+
+  insert_into_file './spec/rails_helper.rb' do
+    <<~RUBY
+      # This file is copied to spec/ when you run 'rails generate rspec:install'
+      require 'spec_helper'
+      ENV['RAILS_ENV'] ||= 'test'
+      require File.expand_path('../config/environment', __dir__)
+      # Prevent database truncation if the environment is production
+      abort("The Rails environment is running in production mode!") if Rails.env.production?
+      require 'rspec/rails'
+      require 'support/factory_bot'
+
+      Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |file| require file }
+
+      begin
+        ActiveRecord::Migration.maintain_test_schema!
+      rescue ActiveRecord::PendingMigrationError => e
+        puts e.to_s.strip
+        exit 1
+      end
+      RSpec.configure do |config|
+        # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
+        config.fixture_path = "#{::Rails.root}/spec/fixtures"
+
+        config.use_transactional_fixtures = true
+
+        config.infer_spec_type_from_file_location!
+
+        # Filter lines from Rails gems in backtraces.
+        config.filter_rails_from_backtrace!
+        # arbitrary gems may also be filtered via:
+        # config.filter_gems_from_backtrace("gem name")
+      end
+
+      Shoulda::Matchers.configure do |config|
+        config.integrate do |with|
+          with.test_framework :rspec
+          with.library :rails
+        end
+      end
+
+    RUBY
+  end
+
+  # Delete factories folder in './test/factories'
+  run 'rm -rf ./test/factories'
+
 
   # Routes
   ########################################
