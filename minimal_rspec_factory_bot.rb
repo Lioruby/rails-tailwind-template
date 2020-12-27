@@ -4,7 +4,6 @@ run "if uname | grep -q 'Darwin'; then pgrep spring | xargs kill -9; fi"
 ########################################
 inject_into_file 'Gemfile', before: 'group :development, :test do' do
   <<~RUBY
-    gem 'devise'
     gem 'autoprefixer-rails'
     gem 'font-awesome-sass'
     gem 'simple_form'
@@ -16,6 +15,9 @@ inject_into_file 'Gemfile', after: 'group :development, :test do' do
     gem 'pry-byebug'
     gem 'pry-rails'
     gem 'dotenv-rails'
+    gem 'rspec-rails', '~> 4.0.1'
+    gem 'factory_bot_rails', '~> 6.1'
+    gem 'shoulda-matchers', '~> 4.0'
   RUBY
 end
 
@@ -72,15 +74,6 @@ RUBY
 
 environment generators
 
-# Insert Devise flashes
-
-inject_into_file 'app/views/layouts/application.html.erb', after: "<%= yield %>" do
-  <<-HTML
-    <p><%= notice %></p>
-    <p><%= alert %></p>
-  HTML
-end
-
 ########################################
 # AFTER BUNDLE
 ########################################
@@ -90,6 +83,76 @@ after_bundle do
   rails_command 'db:drop db:create db:migrate'
   generate('simple_form:install')
   generate(:controller, 'pages', 'home', '--skip-routes', '--no-test-framework')
+
+
+  # Generators: rspec
+  ######################################
+  generate('rspec:install')
+
+  # FACTORY BOT GEM
+  # factory_bot.rb
+  #####################################
+  run 'mkdir ./spec/support'
+  run 'touch ./spec/support/factory_bot.rb'
+  insert_into_file './spec/support/factory_bot.rb' do
+    <<~RUBY
+      require 'factory_bot'
+
+      RSpec.configure do |config|
+        config.include FactoryBot::Syntax::Methods
+      end
+    RUBY
+  end
+
+  # rails_helper.rb
+  gsub_file('./spec/rails_helper.rb', /.+/, '')
+
+  insert_into_file './spec/rails_helper.rb' do
+    <<~RUBY
+      # This file is copied to spec/ when you run 'rails generate rspec:install'
+      require 'spec_helper'
+      ENV['RAILS_ENV'] ||= 'test'
+      require File.expand_path('../config/environment', __dir__)
+      # Prevent database truncation if the environment is production
+      abort("The Rails environment is running in production mode!") if Rails.env.production?
+      require 'rspec/rails'
+      require 'support/factory_bot'
+
+      Dir[Rails.root.join("spec/support/**/*.rb")].sort.each { |file| require file }
+
+      begin
+        ActiveRecord::Migration.maintain_test_schema!
+      rescue ActiveRecord::PendingMigrationError => e
+        puts e.to_s.strip
+        exit 1
+      end
+      RSpec.configure do |config|
+        # Remove this line if you're not using ActiveRecord or ActiveRecord fixtures
+        config.fixture_path = "#{::Rails.root}/spec/fixtures"
+
+        config.use_transactional_fixtures = true
+
+        config.infer_spec_type_from_file_location!
+
+        # Filter lines from Rails gems in backtraces.
+        config.filter_rails_from_backtrace!
+        # arbitrary gems may also be filtered via:
+        # config.filter_gems_from_backtrace("gem name")
+      end
+
+      Shoulda::Matchers.configure do |config|
+        config.integrate do |with|
+          with.test_framework :rspec
+          with.library :rails
+        end
+      end
+
+    RUBY
+  end
+
+  # Delete factories folder in './test/factories'
+  run 'rm -rf ./test/factories'
+
 
   # Routes
   ########################################
@@ -104,40 +167,6 @@ after_bundle do
     *.swp
     .DS_Store
   TXT
-
-  # Devise install + user
-  ########################################
-  generate('devise:install')
-  generate('devise', 'User')
-    # App controller
-  ########################################
-  run 'rm app/controllers/application_controller.rb'
-  file 'app/controllers/application_controller.rb', <<~RUBY
-    class ApplicationController < ActionController::Base
-    #{  "protect_from_forgery with: :exception\n" if Rails.version < "5.2"}  before_action :authenticate_user!
-    end
-  RUBY
-
-  # migrate + devise views
-  ########################################
-  rails_command 'db:migrate'
-  generate('devise:views')
-
-  # Pages Controller
-  ########################################
-  run 'rm app/controllers/pages_controller.rb'
-  file 'app/controllers/pages_controller.rb', <<~RUBY
-    class PagesController < ApplicationController
-      skip_before_action :authenticate_user!, only: [ :home ]
-      def home
-      end
-    end
-  RUBY
-
-  # Environments
-  ########################################
-  environment 'config.action_mailer.default_url_options = { host: "http://localhost:3000" }', env: 'development'
-  environment 'config.action_mailer.default_url_options = { host: "http://TODO_PUT_YOUR_DOMAIN_HERE" }', env: 'production'
 
   # Webpacker / Yarn
   ########################################
