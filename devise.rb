@@ -77,7 +77,7 @@ environment generators
 # Insert Devise flashes
 file 'app/views/shared/_flashes.html.erb', <<~HTML
   <% if notice %>
-    <div class="alert alert-info alert-dismissible fade show m-1" role="alert">
+    <div class="alert m-1" role="alert">
       <%= notice %>
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
@@ -85,7 +85,7 @@ file 'app/views/shared/_flashes.html.erb', <<~HTML
     </div>
   <% end %>
   <% if alert %>
-    <div class="alert alert-warning alert-dismissible fade show m-1" role="alert">
+    <div class="alert m-1" role="alert">
       <%= alert %>
       <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
@@ -229,6 +229,17 @@ after_bundle do
       @import "tailwindcss/base";
       @import "tailwindcss/components";
       @import "tailwindcss/utilities";
+
+      .alert {
+        position: fixed;
+        bottom: 8px;
+        right: 8px;
+        z-index: 1000;
+        background-color: #F7F4EA;
+        padding: 4px;
+        font-size: 10px;
+        border-radius: 2px;
+      }
     SCSS
   end
 
