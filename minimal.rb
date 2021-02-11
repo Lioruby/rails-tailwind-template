@@ -170,6 +170,14 @@ after_bundle do
     SCSS
   end
 
+  # Include FontAwesome in app
+  inject_into_file 'app/assets/stylesheets/application.scss' do
+    <<~SCSS
+      @import "font-awesome-sprockets";
+      @import "font-awesome";
+    SCSS
+  end
+
   # Dotenv
   ########################################
   run 'touch .env'

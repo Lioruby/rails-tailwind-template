@@ -75,6 +75,24 @@ RUBY
 environment generators
 
 # Insert Devise flashes
+file 'app/views/shared/_flashes.html.erb', <<~HTML
+  <% if notice %>
+    <div class="alert m-1" role="alert">
+      <%= notice %>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  <% end %>
+  <% if alert %>
+    <div class="alert m-1" role="alert">
+      <%= alert %>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  <% end %>
+HTML
 
 inject_into_file 'app/views/layouts/application.html.erb', after: "<%= yield %>" do
   <<-HTML
@@ -211,6 +229,25 @@ after_bundle do
       @import "tailwindcss/base";
       @import "tailwindcss/components";
       @import "tailwindcss/utilities";
+
+      .alert {
+        position: fixed;
+        bottom: 8px;
+        right: 8px;
+        z-index: 1000;
+        background-color: #F7F4EA;
+        padding: 4px;
+        font-size: 10px;
+        border-radius: 2px;
+      }
+    SCSS
+  end
+
+  # Include FontAwesome in app
+  inject_into_file 'app/assets/stylesheets/application.scss' do
+    <<~SCSS
+      @import "font-awesome-sprockets";
+      @import "font-awesome";
     SCSS
   end
 
