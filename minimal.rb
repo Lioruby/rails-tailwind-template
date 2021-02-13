@@ -171,11 +171,11 @@ after_bundle do
   end
 
   # Include FontAwesome in app
-  inject_into_file 'app/assets/stylesheets/application.scss' do
-    <<~SCSS
+  inject_into_file 'app/assets/stylesheets/application.css' do
+    <<~CSS
       @import "font-awesome-sprockets";
       @import "font-awesome";
-    SCSS
+    CSS
   end
 
   # Dotenv
