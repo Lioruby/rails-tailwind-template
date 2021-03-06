@@ -218,7 +218,6 @@ after_bundle do
         plugins: [],
       };
     JS
-
   end
 
   # Include Tailwind in app
@@ -243,11 +242,12 @@ after_bundle do
   end
 
   # Include FontAwesome in app
-  inject_into_file 'app/assets/stylesheets/application.css' do
-    <<~CSS
+  run 'mv app/assets/stylesheets/application.css app/assets/stylesheets/application.scss'
+  inject_into_file 'app/assets/stylesheets/application.scss' do
+    <<~SCSS
       @import "font-awesome-sprockets";
       @import "font-awesome";
-    CSS
+    SCSS
   end
 
   # Dotenv
