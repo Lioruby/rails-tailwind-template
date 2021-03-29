@@ -111,6 +111,7 @@ after_bundle do
 
   insert_into_file './spec/rails_helper.rb' do
     <<~RUBY
+      require 'rails'
       # This file is copied to spec/ when you run 'rails generate rspec:install'
       require 'spec_helper'
       ENV['RAILS_ENV'] ||= 'test'
