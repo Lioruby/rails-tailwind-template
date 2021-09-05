@@ -5,6 +5,7 @@ Thanks to Le Wagon : https://github.com/lewagon/rails-templates (same template w
 
 # Get started
 
+## Issue with Minimal template - it will be settled quickly
 ## Minimal
 Get a minimal rails app ready to be deployed on Heroku with Tailwind, Simple form and debugging gems.
 
